@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0b0c"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Many agents"><title>Many Agents Made Simple</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: phone-first app, five screens, bottom tab bar. Cards hold one idea each; dense detail sits in "more" folds.
+   Look: Tranzit system, near-black with champagne gold, committed single theme. */
+:root{
+  color-scheme:dark;
+  --bg:#0b0b0d; --bg2:#131316; --bg3:#1a1a1e; --line:#26262b; --fg:#ece8df; --mute:#9a968c;
+  --gold:#d8b878; --gold-dim:#6e5d3b; --good:#7fb88a; --warn:#d9a45b; --bad:#d0786a;
+  --display:'Cinzel',Georgia,serif; --body:'DM Sans',system-ui,sans-serif; --mono:'DM Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.6;padding-inline:16px;padding-block:0 96px}
+.app{max-width:680px;margin:0 auto}
+a{color:var(--gold)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(28px,8vw,40px);line-height:1.15;margin:10px 0 12px;text-wrap:balance}
+h2{font-family:var(--display);font-weight:500;font-size:clamp(22px,6vw,28px);line-height:1.2;margin:0 0 10px;color:var(--gold);text-wrap:balance}
+h3{font-size:17px;margin:0 0 4px}
+.sec{font-family:var(--display);font-weight:500;font-size:21px;color:var(--gold);margin:34px 0 10px;text-wrap:balance}
+p{margin:0 0 14px}
+.screen{padding-block:28px 8px}
+.lede{font-size:19px}
+.mute{color:var(--mute)}
+.small{font-size:14px;color:var(--mute)}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:16px;margin-block:14px}
+.card.gold{border-color:var(--gold-dim)}
+.card p:last-child{margin-bottom:0}
+.take{border-left:3px solid var(--gold);padding:2px 0 2px 14px;margin-block:14px;font-size:18px}
+.k{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.tag{font-family:var(--mono);font-size:11px;letter-spacing:.05em;padding:2px 8px;border:1px solid var(--line);border-radius:3px;white-space:nowrap;color:var(--mute);display:inline-block}
+.tag.sim{color:var(--warn);border-color:#55432a}
+.tag.ok{color:var(--good);border-color:#2f4a36}
+.tag.no{color:var(--bad);border-color:#4a2f2a}
+.tag.best{color:#16130b;background:var(--gold);border-color:var(--gold)}
+button{font-family:var(--mono);font-size:13px;letter-spacing:.04em;cursor:pointer;border-radius:8px;border:1px solid var(--gold-dim);background:transparent;color:var(--gold);padding:12px 16px;min-height:44px}
+button.primary{background:var(--gold);color:#16130b;border-color:var(--gold);font-weight:500}
+button[aria-pressed=true]{background:var(--gold);color:#16130b;border-color:var(--gold)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>button{flex:1 1 130px}
+input[type=range]{width:100%;accent-color:var(--gold);min-width:0;height:32px}
+select{font-family:var(--mono);font-size:14px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:11px 12px;min-height:44px;width:100%}
+.sl{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-family:var(--mono);font-size:13px;color:var(--mute);margin-top:8px}
+.sl b{color:var(--fg);font-size:18px;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
+.switch{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);cursor:pointer;font-size:16px}
+.switch input{width:22px;height:22px;accent-color:var(--gold);flex:none;margin-top:2px}
+.msg{margin-top:10px;padding:10px 14px;border:1px solid var(--line);border-radius:8px;font-size:16px}
+.msg.good{border-color:#2f4a36;color:var(--good)} .msg.mid{border-color:#55432a;color:var(--warn)} .msg.bad{border-color:#4a2f2a;color:var(--bad)}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-block:12px}
+.grid>div{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
+.grid b{font-family:var(--mono);font-size:12px;color:var(--gold);letter-spacing:.08em;text-transform:uppercase}
+.grid p{margin:6px 0 0;font-size:15px;color:var(--mute)}
+.grid .no{border-color:#4a2f2a}
+.kv>div{display:grid;grid-template-columns:minmax(0,36%) 1fr;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}
+.kv>div:last-child{border-bottom:0}
+.kv span:first-child{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding-top:3px}
+.two{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.two>div{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
+.two h3{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.two .pro h3{color:var(--good)} .two .con h3{color:var(--bad)}
+.two ul{margin:8px 0 0;padding-left:18px} .two li{margin-bottom:8px;font-size:15px}
+ul.plain{padding-left:20px;margin:0 0 14px} ul.plain li{margin-bottom:8px}
+/* meters */
+.meter{margin-block:10px}
+.meter .lab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;color:var(--mute);margin-bottom:4px}
+.meter .lab b{color:var(--fg);font-weight:500}
+.track{height:12px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.fill{height:100%;background:var(--gold);transition:width .25s}
+.fill.cost{background:var(--gold-dim)}
+.fill.bad{background:var(--bad)}
+/* toy */
+.crew{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 12px;min-height:22px}
+.crew i{width:18px;height:18px;border-radius:50%;background:var(--bg3);border:1px solid var(--line)}
+.crew i.on{background:var(--gold);border-color:var(--gold)}
+.boxes{display:grid;grid-template-columns:repeat(12,1fr);gap:5px;margin-block:8px 14px}
+.boxes i{aspect-ratio:1;border-radius:3px;background:var(--bg3);border:1px solid var(--line);transition:background .25s}
+.boxes i.done{background:var(--gold);border-color:var(--gold)}
+/* fan-out sim */
+.dots{display:grid;grid-template-columns:repeat(50,1fr);gap:2px;margin-block:12px}
+.dots i{aspect-ratio:1;border-radius:50%;background:var(--bg3)}
+.dots i.run{background:var(--gold);box-shadow:0 0 5px var(--gold)}
+.dots i.done{background:var(--gold-dim)}
+.readout{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));margin-top:10px}
+.readout div{border-top:1px solid var(--line);padding-top:8px;min-width:0}
+.readout small{display:block;font-family:var(--mono);font-size:11px;color:var(--mute);letter-spacing:.06em;text-transform:uppercase}
+.readout strong{font-family:var(--mono);font-size:20px;font-weight:500;font-variant-numeric:tabular-nums}
+/* chips / stepper */
+.chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-family:var(--mono);font-size:13px;margin-block:6px 14px}
+.chips span{padding:4px 10px;border:1px solid var(--line);border-radius:5px;background:var(--bg3)}
+.chips .g{border-color:var(--gold-dim);color:var(--gold)}
+.chips .c{border-color:#2f4a36;color:var(--good)}
+.chips .on{background:var(--gold);color:#16130b;border-color:var(--gold)}
+.chips em{font-style:normal;color:var(--mute)}
+.stepbtns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.stepbtns button{padding:10px 4px;font-size:12px}
+/* check */
+.chk label{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer;font-size:16px}
+.chk input{width:22px;height:22px;accent-color:var(--gold);flex:none;margin-top:2px}
+fieldset{border:0;padding:0;margin:0}
+/* roster */
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.roster{list-style:none;padding:0;margin:10px 0;display:grid;gap:6px}
+.roster li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;border-bottom:1px solid var(--line);padding-bottom:6px;font-size:15px}
+.roster span:last-child{font-family:var(--mono);font-size:12.5px;color:var(--gold);text-align:right;max-width:46%}
+.flow{font-family:var(--mono);font-size:13px;margin:8px 0;overflow-wrap:anywhere}
+/* game */
+.gq{font-size:21px;line-height:1.35;margin:10px 0 16px;min-height:3.2em}
+.dotsrow{display:flex;gap:6px;margin-bottom:6px}
+.dotsrow i{width:10px;height:10px;border-radius:50%;background:var(--bg3);border:1px solid var(--line)}
+.dotsrow i.ok{background:var(--good);border-color:var(--good)} .dotsrow i.bad{background:var(--bad);border-color:var(--bad)} .dotsrow i.now{border-color:var(--gold)}
+/* cost */
+.opt{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:14px;margin-block:10px}
+.opt.best{border-color:var(--gold)}
+.opt .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.opt .nm{font-weight:600;font-size:16px}
+.opt .nums{display:flex;gap:18px;flex-wrap:wrap;font-family:var(--mono);margin-block:8px}
+.opt .nums small{display:block;font-size:11px;color:var(--mute);letter-spacing:.06em;text-transform:uppercase}
+.opt .nums strong{font-size:22px;font-weight:500;font-variant-numeric:tabular-nums}
+.opt .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.seats{display:grid;grid-template-columns:repeat(40,1fr);gap:2px;margin-block:10px}
+.seats i{aspect-ratio:1;background:var(--bg3);border-radius:1px}
+.seats i.w{background:var(--gold)}
+svg{display:block;width:100%;height:auto}
+svg text{font-family:var(--mono);font-size:20px;fill:var(--mute)}
+details{margin-top:10px}
+summary{cursor:pointer;color:var(--gold);font-family:var(--mono);font-size:12px;letter-spacing:.06em;min-height:36px;display:flex;align-items:center}
+details p{margin:6px 0 0;font-size:15px;color:var(--mute)}
+/* plan */
+.progress{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin-block:8px 16px}
+.step{background:var(--bg2);border:1px solid var(--line);border-radius:10px;margin-block:10px;padding:14px}
+.step.done{border-color:#2f4a36}
+.step .hd{display:flex;gap:12px;align-items:flex-start;cursor:pointer}
+.step input{width:26px;height:26px;accent-color:var(--gold);flex:none;margin-top:2px}
+.step .t{font-weight:600;font-size:18px}
+.step .do{margin:6px 0 0}
+pre{white-space:pre-wrap;word-wrap:break-word;font-family:var(--body);font-size:15px;margin:0;line-height:1.55}
+dl{margin:0} dt{font-weight:600;margin-top:12px} dd{margin:2px 0 0;color:var(--mute);font-size:15px}
+/* tabs */
+.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0px);z-index:10}
+.tabs div{display:flex;width:100%;max-width:680px}
+.tabs button{flex:1;border:0;border-radius:0;background:transparent;color:var(--mute);padding:10px 2px 8px;min-height:58px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase}
+.tabs button i{width:22px;height:3px;border-radius:2px;background:transparent}
+.tabs button[aria-current=page]{color:var(--gold)}
+.tabs button[aria-current=page] i{background:var(--gold)}
+footer{margin-top:30px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--mute)}
+footer .sig{font-family:var(--mono);color:var(--gold);letter-spacing:.04em}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head><body>
+
+<div class="app">
+<main>
+
+<!-- ============ SCREEN 1: NEWS ============ -->
+<section class="screen" id="s-news">
+  <div class="eyebrow">9 Oct 2026 · What happened</div>
+  <h1>One agent plans. Up to 1,000 work.</h1>
+  <p class="lede">Anthropic added dynamic workflows to Claude Managed Agents. A lead agent splits a big job, hands the pieces to many helper agents, and merges what comes back.</p>
+
+  <div class="card">
+    <div class="kv">
+      <div><span>Size</span><span>Up to 1,000 agents in one run</span></div>
+      <div><span>Switch on</span><span>Pick the agent type <b>multiagent_20261001</b></span></div>
+      <div><span>Where</span><span>Paid Claude plans, the Anthropic API, Amazon Bedrock, Google Cloud and Microsoft Foundry</span></div>
+      <div><span>Warning</span><span>It can burn a lot of tokens, so Anthropic says to start small</span></div>
+    </div>
+  </div>
+
+  <div class="card gold">
+    <div class="k">Anthropic's own test <span class="tag sim">VENDOR-REPORTED</span></div>
+    <p style="margin:8px 0 12px">70 bugs were hidden in a 116,000-line codebase. A single agent found 14 to 27 per run. The workflow found 66.</p>
+    <div class="meter"><div class="lab"><span>One agent, best run</span><b>27 of 70</b></div><div class="track"><div class="fill cost" style="width:38.6%"></div></div></div>
+    <div class="meter"><div class="lab"><span>Dynamic workflow</span><b>66 of 70</b></div><div class="track"><div class="fill" style="width:94.3%"></div></div></div>
+    <p class="small" style="margin:8px 0 0">One test on one kind of task. Treat it as a signal, not a verdict.</p>
+  </div>
+
+  <h2 class="sec">How a run works</h2>
+  <div class="card">
+    <div class="stepbtns" id="stepbtns" role="group" aria-label="Run steps">
+      <button type="button" aria-pressed="true">Plan</button><button type="button" aria-pressed="false">Fan out</button><button type="button" aria-pressed="false">Check</button><button type="button" aria-pressed="false">Merge</button>
+    </div>
+    <div class="chips" id="stepchips" aria-hidden="true"></div>
+    <p id="steptxt" style="margin:0"></p>
+  </div>
+
+  <h2 class="sec">Watch a run fan out</h2>
+  <div class="card gold">
+    <div class="sl"><span>Agents in the run</span><b id="fnv"></b></div>
+    <input id="fn" type="range" min="1" max="1000" value="240" aria-label="Agents in the run">
+    <div class="dots" id="fgrid" aria-hidden="true"></div>
+    <div class="row"><button class="primary" id="frun" type="button">Run</button><button id="freset" type="button">Reset</button></div>
+    <div class="readout">
+      <div><small>Running now</small><strong id="fr-run">0</strong></div>
+      <div><small>Finished</small><strong id="fr-done">0</strong></div>
+      <div><small>Rounds of 16</small><strong id="fr-waves">0</strong></div>
+      <div><small>Tokens vs 1 agent</small><strong id="fr-tok">0</strong></div>
+    </div>
+    <p class="small" style="margin:12px 0 0"><span class="tag sim">SIMULATED</span> The dots are not real agents. It assumes 16 work at once and equal work per agent.</p>
+  </div>
+
+  <h2 class="sec">How it compares</h2>
+  <p class="mute">Parallel agents are not new. What differs is where the plan lives and how far it scales.</p>
+  <div class="card gold">
+    <h3>Claude dynamic workflows</h3>
+    <div class="kv">
+      <div><span>Scale</span><span>Up to 1,000 agents per run</span></div>
+      <div><span>Plan lives in</span><span>A script outside the model's memory</span></div>
+      <div><span>Checking</span><span>Agents try to refute each finding</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Claude Code agent teams</h3>
+    <div class="kv">
+      <div><span>Scale</span><span>A lead plus a handful of long-running peers</span></div>
+      <div><span>Plan lives in</span><span>A shared task list; agents claim tasks</span></div>
+      <div><span>Status</span><span>Research preview since Feb 2026</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Kimi agent swarm</h3>
+    <div class="kv">
+      <div><span>Scale</span><span>100 sub-agents (K2.5), 300 (K2.6)</span></div>
+      <div><span>Plan lives in</span><span>Trained into the model itself</span></div>
+      <div><span>Where</span><span>Open weights, Kimi API and apps</span></div>
+    </div>
+  </div>
+  <div class="two">
+    <div class="pro"><h3>What looks new</h3><ul><li>The highest published ceiling I found</li><li>A script that holds the plan</li><li>Built-in cross-checking</li><li>Delivery through three big clouds</li></ul></div>
+    <div class="con"><h3>What is not new</h3><ul><li>The swarm idea. Kimi shipped it earlier this year.</li><li>I found no OpenAI or Google equivalent to cite, so check before saying Claude is the only one.</li><li>An OpenAI engineer has called swarms a big waste of tokens.</li></ul></div>
+  </div>
+
+  <h2 class="sec">Talking about it accurately</h2>
+  <ul class="plain">
+    <li>Say "up to 1,000 agents in a run". Avoid "1,000 working at once".</li>
+    <li>Call the 66 of 70 result Anthropic's own test.</li>
+    <li>Mention the token cost. It makes a post more credible.</li>
+    <li>Do not call it the first. Kimi's swarms came earlier.</li>
+  </ul>
+</section>
+
+<!-- ============ SCREEN 2: LEARN ============ -->
+<section class="screen" id="s-learn" hidden>
+  <div class="eyebrow">The basics</div>
+  <h2>Do more agents finish sooner?</h2>
+  <div class="take">Not as a rule. More agents help when the job splits into independent pieces, and only until you hit a speed limit.</div>
+
+  <div class="card">
+    <h3>Think of moving house</h3>
+    <p class="mute" style="margin:0">24 boxes, one hour each. Friends help, but only so many fit through the door at once. Try it.</p>
+  </div>
+  <div class="card gold">
+    <div class="sl"><span>Helpers</span><b id="hv">1</b></div>
+    <input id="h" type="range" min="1" max="24" value="1" aria-label="Number of helpers">
+    <div class="crew" id="crew" aria-hidden="true"></div>
+    <div class="boxes" id="boxes" aria-hidden="true"></div>
+    <div class="meter"><div class="lab"><span>Time to finish</span><b id="tv"></b></div><div class="track"><div class="fill" id="tf"></div></div></div>
+    <div class="meter"><div class="lab"><span>Cost</span><b id="cv"></b></div><div class="track"><div class="fill cost" id="cf"></div></div></div>
+    <div class="msg" id="tmsg" aria-live="polite"></div>
+    <div class="row" style="margin-top:12px"><button class="primary" id="play" type="button">Watch them work</button></div>
+    <p class="small" style="margin:10px 0 0" id="clock"></p>
+    <p class="small" style="margin:6px 0 0"><span class="tag sim">TOY</span> Only 6 can work at once here. In Claude Code the matching number is 16 by default.</p>
+  </div>
+  <div class="grid">
+    <div><b>Splittable?</b><p>Only the independent part speeds up. A step that needs the last answer cannot be shared out.</p></div>
+    <div><b>Capped?</b><p>Even in a 1,000-agent run, 16 work at once by default. Extra agents wait in line.</p></div>
+    <div><b>Worth it?</b><p>Each agent costs tokens and adds merge work. Gains flatten while the bill keeps rising.</p></div>
+  </div>
+  <p class="small">The first rule is Amdahl's law: time = (1 − p) + p ÷ n, where p is the share that can run side by side and n is the workers. If 90% runs in parallel, even endless workers cannot beat 10 times faster.</p>
+
+  <h2 class="sec">Try it on the 1,000-agent run</h2>
+  <div class="card gold">
+    <div class="presets" id="spre" role="group" aria-label="Example tasks">
+      <button type="button" data-p="95" data-n="240" aria-pressed="true">Bug hunt</button>
+      <button type="button" data-p="90" data-n="120" aria-pressed="false">Fact-check</button>
+      <button type="button" data-p="60" data-n="60" aria-pressed="false">Shared files</button>
+      <button type="button" data-p="10" data-n="20" aria-pressed="false">Step by step</button>
+    </div>
+    <div class="sl"><span>Agents in the run</span><b id="snv"></b></div>
+    <input id="sn" type="range" min="1" max="1000" value="240" aria-label="Agents in the run">
+    <div class="sl"><span>Share that can run side by side</span><b id="spv"></b></div>
+    <input id="sp" type="range" min="0" max="100" value="95" aria-label="Parallel share">
+    <div class="sl"><span>Agents working at once</span><b id="scv"></b></div>
+    <input id="sc" type="range" min="1" max="256" value="16" aria-label="Agents working at once">
+    <div class="sl"><span>Extra cost per agent</span><b id="ssv"></b></div>
+    <input id="ss" type="range" min="0" max="10" value="2" aria-label="Extra cost per agent">
+    <svg id="schart" viewBox="0 0 600 300" role="img" aria-label="Speed-up compared with number of agents"></svg>
+    <div class="readout">
+      <div><small>Faster than 1 agent</small><strong id="sr-speed"></strong></div>
+      <div><small>Token cost</small><strong id="sr-cost"></strong></div>
+      <div><small>Speed per cost</small><strong id="sr-eff"></strong></div>
+      <div><small>Best agent count</small><strong id="sr-best"></strong></div>
+    </div>
+    <div class="msg" id="sverdict" aria-live="polite"></div>
+    <p class="small" style="margin:12px 0 0"><span class="tag sim">SIMULATED</span> A teaching model with assumptions I chose, not a measurement. The green ring marks the best count.</p>
+  </div>
+  <p>Notice the headline setup. Past 16 working at once, speed stops improving. Anthropic's 66 of 70 result is about <em>finding more</em>, not finishing sooner. That is a different reason to use many agents, and it is where cross-checking pays off.</p>
+
+  <h2 class="sec">Is a team worth it?</h2>
+  <div class="card">
+    <fieldset class="chk" id="needset">
+      <legend class="k" style="margin-bottom:4px">Tick what is true</legend>
+      <label><input type="checkbox">The work splits into pieces that do not need each other's output.</label>
+      <label><input type="checkbox">There are many pieces (about 10 or more), or one agent's context cannot hold them all.</label>
+      <label><input type="checkbox">A wrong or missed result costs more than the extra tokens.</label>
+      <label><input type="checkbox">Each piece has a clear "done" check that another agent can test.</label>
+      <label><input type="checkbox">Agents will not edit the same files at once, or each gets its own copy.</label>
+      <label><input type="checkbox">A usage limit is set and a small trial run is planned.</label>
+    </fieldset>
+    <div class="msg" id="needv" aria-live="polite"></div>
+  </div>
+
+  <h2 class="sec">Good and bad sides</h2>
+  <div class="two">
+    <div class="pro"><h3>Advantages</h3><ul>
+      <li>Better coverage on wide tasks.</li>
+      <li>Cross-checking filters weak findings.</li>
+      <li>The main chat stays clean, because results sit in the script.</li>
+      <li>Runs can resume after a stop.</li>
+      <li>Same feature on the API and three clouds.</li>
+    </ul></div>
+    <div class="con"><h3>Disadvantages</h3><ul>
+      <li>Token cost grows fast.</li>
+      <li>The headline result is one vendor test.</li>
+      <li>1,000 total does not mean 1,000 at once.</li>
+      <li>Poor fit for sequential work or edits that collide.</li>
+      <li>Hundreds of outputs are hard to audit.</li>
+    </ul></div>
+  </div>
+
+  <h2 class="sec">Which agents does a job need?</h2>
+  <p class="mute">Most workflows use four roles. The task decides how many of each.</p>
+  <div class="grid">
+    <div><b>Planner</b><p>Reads the job, lists the pieces, decides the order. Usually one.</p></div>
+    <div><b>Worker</b><p>Does one piece with a small, fresh context. The only role that grows with the work.</p></div>
+    <div><b>Checker</b><p>Tries to prove a worker wrong. Add it where errors are costly.</p></div>
+    <div><b>Merger</b><p>Combines, ranks and removes duplicates. Usually one.</p></div>
+  </div>
+  <div class="card gold">
+    <div class="presets" id="taskbtns" role="group" aria-label="Task types"></div>
+    <div id="taskout"></div>
+    <p class="small" style="margin:10px 0 0">Starting points from Anthropic's scaling guidance and the Claude Code examples. Adjust after a small trial.</p>
+  </div>
+
+  <h2 class="sec">Who decides how many agents?</h2>
+  <p>Both, in layers. You set the outer limits. The lead agent chooses the count inside them.</p>
+  <div class="two">
+    <div class="pro"><h3>You decide</h3><ul>
+      <li>The job and how big it is, such as "audit these 500 files".</li>
+      <li>A ceiling on agents, agents at once, and spend. The platform caps are 1,000 per run and 16 at once by default.</li>
+      <li>Whether to add checkers and which model the helpers use.</li>
+      <li>Whether to start small. Anthropic advises it.</li>
+      <li>Whether to approve a big run. Claude Code warns above about 25 agents or 1.5M projected tokens.</li>
+    </ul></div>
+    <div class="con"><h3>The lead agent decides</h3><ul>
+      <li>How to split the job into pieces.</li>
+      <li>How many helpers to start, within your limits.</li>
+      <li>Which pieces run side by side and which wait.</li>
+      <li>In dynamic workflows it writes this as a script you can read.</li>
+    </ul></div>
+  </div>
+  <p class="small">Good habit: give a clear job, a ceiling and a budget. Ask for the plan and the agent count first, then approve. I found no documentation on exactly how Claude picks the count, so treat that as default behaviour, not a promise.</p>
+
+  <h2 class="sec">How work is handed out</h2>
+  <div class="grid">
+    <div><b>Split</b><p>Cut the job by a natural unit: a file, a page, a source, a claim. Pieces must be independent.</p></div>
+    <div><b>Scope</b><p>Each worker gets one piece, a short brief, and only the tools it needs.</p></div>
+    <div><b>Structure</b><p>Workers answer in a set shape, such as JSON, so the next step can read it.</p></div>
+    <div><b>Merge</b><p>A script or merger agent collects the results into one answer.</p></div>
+  </div>
+  <p>The plan can live in two places. With subagents, Claude decides turn by turn what to run next and every result enters its memory. With a dynamic workflow, a script holds the plan, the loops and the results, which is why one run can reach hundreds of agents.</p>
+</section>
+
+<!-- ============ SCREEN 3: ORDER ============ -->
+<section class="screen" id="s-order" hidden>
+  <div class="eyebrow">Step by step or all at once</div>
+  <h2>Which steps can run together?</h2>
+  <div class="take">If step B needs the answer from step A, B waits. If they do not need each other, run them together.</div>
+
+  <h3>Ask these in order</h3>
+  <ul class="plain">
+    <li><strong>Does B need A's output?</strong> Run them in line.</li>
+    <li><strong>Do both write the same file?</strong> Run in line, or give each its own copy.</li>
+    <li><strong>Same task on many items?</strong> Fan out, one worker per item.</li>
+    <li><strong>Does a wrong answer cost more than a second look?</strong> Add a checker.</li>
+    <li><strong>Unknown number of rounds?</strong> Loop, with a stop rule such as two rounds with no progress.</li>
+  </ul>
+
+  <h2 class="sec">Five shapes</h2>
+  <div class="card"><h3>Single agent</h3><div class="chips"><span>work</span><em>→</em><span>work</span><em>→</em><span>work</span></div><p class="small" style="margin:0">Few steps that each need the last. Lowest tokens until the memory fills.</p></div>
+  <div class="card"><h3>Chain</h3><div class="chips"><span>draft</span><em>→</em><span>review</span><em>→</em><span>revise</span></div><p class="small" style="margin:0">Stages that depend on each other. Time adds up.</p></div>
+  <div class="card"><h3>Fan out</h3><div class="chips"><span class="g">plan</span><em>→</em><span>●</span><span>●</span><span>●</span><span>●</span><em>→</em><span class="g">merge</span></div><p class="small" style="margin:0">Many independent items. Time is the number of rounds. Tokens match doing them one by one.</p></div>
+  <div class="card"><h3>Fan out + check</h3><div class="chips"><span class="g">plan</span><em>→</em><span>●</span><span>●</span><span>●</span><em>→</em><span class="c">◆</span><span class="c">◆</span><span class="c">◆</span><em>→</em><span class="g">merge</span></div><p class="small" style="margin:0">For costly errors. Two rounds, and roughly double the work tokens.</p></div>
+  <div class="card"><h3>Loop to a check</h3><div class="chips"><span>fix</span><em>→</em><span>test</span><em>→</em><span>fix</span><em>→</em><span>test</span></div><p class="small" style="margin:0">Rounds are unknown, so tokens grow each round. Set a stop rule.</p></div>
+  <p class="small">● is a worker. ◆ is a checker that tries to prove the worker wrong.</p>
+
+  <h2 class="sec">Practise</h2>
+  <div class="card gold" id="game">
+    <div class="dotsrow" id="gdots" aria-hidden="true"></div>
+    <div class="small" id="gcount"></div>
+    <div class="gq" id="gq" aria-live="polite"></div>
+    <div class="row" id="gbtns">
+      <button type="button" id="b-seq">One after another</button>
+      <button type="button" id="b-par">Together</button>
+    </div>
+    <div class="msg" id="gfb" hidden aria-live="polite"></div>
+    <div class="row" style="margin-top:12px"><button class="primary" id="gnext" type="button" hidden>Next</button></div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 4: COST ============ -->
+<section class="screen" id="s-cost" hidden>
+  <div class="eyebrow">Time and money</div>
+  <h2>What will it cost?</h2>
+  <p class="mute">Say how big the job is. The app prices five ways to do it and picks the cheapest one that still meets your deadline.</p>
+
+  <div class="card gold">
+    <div class="sl"><span>Items to process (files, pages, documents)</span><b id="nv"></b></div>
+    <input id="n" type="range" min="1" max="500" value="120" aria-label="Items to process">
+    <div class="sl" style="margin-top:14px"><span>I need it done within</span></div>
+    <select id="dl" aria-label="Deadline">
+      <option value="10">10 minutes</option><option value="30" selected>30 minutes</option><option value="60">1 hour</option><option value="240">4 hours</option><option value="600">10 hours</option>
+    </select>
+    <label class="switch" style="margin-top:14px"><input type="checkbox" id="chk"><span>Double-check every result with a second agent</span></label>
+    <label class="switch"><input type="checkbox" id="cheap"><span>A cheaper AI model is good enough for the main work</span></label>
+    <details>
+      <summary>More settings</summary>
+      <div class="sl"><span>Input tokens per item</span><b id="tiv"></b></div>
+      <input id="ti" type="range" min="500" max="50000" step="500" value="8000" aria-label="Input tokens per item">
+      <div class="sl"><span>Output tokens per item</span><b id="tov"></b></div>
+      <input id="to" type="range" min="100" max="8000" step="100" value="1500" aria-label="Output tokens per item">
+      <div class="sl"><span>Seconds of work per item</span><b id="tsv"></b></div>
+      <input id="ts" type="range" min="10" max="600" step="10" value="60" aria-label="Seconds per item">
+      <div class="sl"><span>Agents working at once</span><b id="cav"></b></div>
+      <input id="ca" type="range" min="1" max="256" value="16" aria-label="Agents working at once">
+      <div class="sl"><span>Checkers per item</span><b id="vv"></b></div>
+      <input id="v" type="range" min="0" max="3" value="1" aria-label="Checkers per item">
+      <div class="sl" style="margin-top:12px"><span>Main model</span></div>
+      <select id="m" aria-label="Main model"><option value="sonnet">Sonnet 5.5</option><option value="opus">Opus 5.5</option><option value="fable">Fable 5.1</option></select>
+      <label class="switch" style="margin-top:12px"><input type="checkbox" id="cache" checked><span>Prompt caching</span></label>
+      <label class="switch"><input type="checkbox" id="batch"><span>Batch service (50% off, results come back later)</span></label>
+    </details>
+  </div>
+
+  <div class="msg good" id="best" aria-live="polite"></div>
+  <div id="opts"></div>
+  <p class="small"><span class="tag sim">ESTIMATE</span> Prices per million tokens: Sonnet 5.5 $2 in / $10 out, Opus 5.5 $4 / $20, Fable 5.1 $10 / $50, Haiku 5.5 $0.10 / $0.50. Cache reads cost 0.05 to 0.1 times input. It assumes a 3,000-token shared brief per agent, 300-token summaries, 30 seconds to plan and 60 to merge, and checkers at half the time of a work step. One agent keeps growing memory that it re-reads each turn. Cache-write premiums and retries are left out. Check current rates before budgeting.</p>
+  <div class="card">
+    <h3>Reading it</h3>
+    <ul class="plain" style="margin:8px 0 0">
+      <li>One agent re-reads a growing memory every item, so it costs more and may not fit at all.</li>
+      <li>One fresh agent at a time and the team use the same tokens. The team is just faster.</li>
+      <li>Checking roughly doubles the work step.</li>
+      <li>A cheaper model on the work step is the usual saving. Test it on a few items first.</li>
+    </ul>
+  </div>
+
+  <h2 class="sec">How many agents at most?</h2>
+  <p class="mute">The ceiling is 1,000 in one run. It guards against runaway loops. It is not a target.</p>
+  <div class="card">
+    <div class="kv">
+      <div><span>Agents per run</span><span>1,000 in total</span></div>
+      <div><span>Items in one batch call</span><span>4,096</span></div>
+      <div><span>Working at once</span><span>16 by default, fewer on small machines. Newer Claude Code versions let you set 1 to 256</span></div>
+      <div><span>Big-run warning</span><span>Over 25 agents, or a projected total over 1.5 million tokens</span></div>
+      <div><span>Size setting</span><span>small: under 5 agents. medium: under 10 (default). large: under 50. Pro plans default to small</span></div>
+      <div><span>Anthropic's rule</span><span>1 agent for a simple fact, 2 to 4 for a comparison, 10 or more for complex research</span></div>
+      <div><span>Memory window</span><span>1M tokens at standard price for Sonnet 5.5, Opus 5.5 and Fable 5.1</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="seats" id="seats" aria-hidden="true"></div>
+    <div class="row" id="segs" role="group" aria-label="Agents working at once">
+      <button type="button" data-n="16" aria-pressed="true">16 at once</button>
+      <button type="button" data-n="64" aria-pressed="false">64</button>
+      <button type="button" data-n="256" aria-pressed="false">256</button>
+    </div>
+    <p class="small" style="margin:10px 0 0" id="segnote"></p>
+  </div>
+  <p class="small">These are Claude Code limits. The Managed Agents service was reported with the same 1,000 cap, but I could not confirm its concurrency setting.</p>
+
+  <h2 class="sec">Ways to spend less</h2>
+  <ul class="plain">
+    <li><strong>Try a small slice first.</strong> One folder or one narrow question. Watch tokens per agent, then scale.</li>
+    <li><strong>Set a small size.</strong> It keeps Claude from planning a bigger run than you need.</li>
+    <li><strong>Match the model to the step.</strong> Cheap for simple steps, strong for planning and checking.</li>
+    <li><strong>Share the prompt prefix.</strong> Agents with the same setup read each other's cache. It lasts five minutes by default.</li>
+    <li><strong>Batch what can wait.</strong> It takes 50% off, but answers come back later.</li>
+    <li><strong>Check what matters.</strong> Cross-check high-stakes findings, not everything.</li>
+    <li><strong>Keep memory small.</strong> Fresh agents avoid the re-read cost of one long chat.</li>
+    <li><strong>Stop loops.</strong> End after rounds that make no progress.</li>
+    <li><strong>Do not cut blindly.</strong> In Anthropic's analysis of a browsing test, token use explained 80% of the difference in results.</li>
+  </ul>
+</section>
+
+<!-- ============ SCREEN 5: PLAN ============ -->
+<section class="screen" id="s-plan" hidden>
+  <div class="eyebrow">Your turn</div>
+  <h2>Five steps to follow</h2>
+  <p class="mute">Tick each one as you finish it. Your progress is saved on this device.</p>
+  <div class="progress"><div class="fill" id="pf" style="width:0"></div></div>
+  <div class="small" id="ptxt"></div>
+  <div id="steps"></div>
+  <div class="row"><button type="button" id="reset">Start over</button><button type="button" class="primary" id="install" hidden>Install this app</button></div>
+
+  <h2 class="sec">Where it fits</h2>
+  <div class="grid">
+    <div><b>Code audits</b><p>Bug hunts and security reviews across a large repository, one slice per agent.</p></div>
+    <div><b>Migrations</b><p>Upgrading a library across hundreds of files, with a check pass at the end.</p></div>
+    <div><b>Fact-checking</b><p>Verifying a long report claim by claim, with skeptic agents.</p></div>
+    <div><b>Deep research</b><p>Reading many sources in parallel, then writing one answer.</p></div>
+    <div><b>Document review</b><p>Contracts, tickets or logs where each item can be read alone.</p></div>
+    <div class="no"><b>Skip it for</b><p>Small fixes, step-by-step reasoning, and edits that touch the same files.</p></div>
+  </div>
+  <h3>Which jobs use the most agents?</h3>
+  <p>Jobs that repeat one step across a big set and then check it: a codebase-wide bug sweep, a 500-file migration, research cross-checked across sources, or a plan drafted from several angles.</p>
+  <p>The count adds up fast. One worker and one checker for each of 500 files is 1,000 agents before the planner and merger, so a run that size needs splitting. Most jobs need far fewer. Anthropic reported that early versions of its research system spawned 50 subagents for simple questions, and it corrected that.</p>
+
+  <h2 class="sec">How companies plan</h2>
+  <p class="mute">I found no published limit on agents per task. What exists is adoption data and the controls that cap spend.</p>
+  <div class="grid">
+    <div><b>Adoption</b><p>Gartner's 2026 survey: 17% have deployed agents and over 60% plan to within two years. Deloitte: 11% run them in production.</p></div>
+    <div><b>Risk</b><p>Gartner predicted in June 2025 that over 40% of agent projects will be cancelled by the end of 2027, over cost, unclear value and weak controls.</p></div>
+    <div><b>Strong cases</b><p>Software development, customer service, finance operations and data analysis. Sales and marketing results are mixed.</p></div>
+    <div><b>Cost controls</b><p>Admins can switch workflows off, limit which models agents use, and set size guidelines. Anyone can stop a run from the workflow view.</p></div>
+  </div>
+  <p>A practical plan: pilot on one splittable job, set a small size, measure tokens per agent on a slice, set checking by risk, and expand only when the cost per finished item holds. On a subscription, runs draw on plan limits. On the API they are billed per token.</p>
+  <p class="small">Adoption figures come from a secondary summary of Gartner, Deloitte and market research, not checked against the originals. Several are vendor estimates.</p>
+
+  <h2 class="sec">Words you will see</h2>
+  <dl>
+    <dt>Agent</dt><dd>An AI worker that can read, decide and use tools.</dd>
+    <dt>Sub-agent</dt><dd>A worker started by another agent to do one piece.</dd>
+    <dt>Dynamic workflow</dt><dd>A script that holds the plan and runs many agents.</dd>
+    <dt>Managed Agents</dt><dd>Anthropic's hosted agent platform, where dynamic workflows were added.</dd>
+    <dt>Token</dt><dd>A small chunk of text. You pay for tokens read and written.</dd>
+    <dt>Parallel</dt><dd>Running at the same time.</dd>
+    <dt>Checker</dt><dd>An agent that tries to prove another agent wrong.</dd>
+    <dt>Context</dt><dd>Everything one agent can keep in mind at once.</dd>
+  </dl>
+
+  <footer>
+    <p><strong>Sources</strong><br>
+    <a href="https://the-decoder.com/anthropics-claude-can-now-orchestrate-up-to-1000-ai-agents-in-parallel-through-dynamic-workflows/" target="_blank" rel="noopener">The Decoder, 9 Oct 2026</a> ·
+    <a href="https://code.claude.com/docs/en/workflows" target="_blank" rel="noopener">Claude Code docs, workflows</a> ·
+    <a href="https://platform.claude.com/cookbook/claude-agent-sdk-08-dynamic-workflows" target="_blank" rel="noopener">Claude Cookbook</a> ·
+    <a href="https://platform.claude.com/docs/en/about-claude/pricing" target="_blank" rel="noopener">Claude pricing</a> ·
+    <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank" rel="noopener">Anthropic, multi-agent research</a> ·
+    <a href="https://theneuron.ai/explainer-articles/kimi-k26-just-shipped-open-weight-claude-level-coding-at-76-the-cost-with-a-300-agent-swarm-as-the-real-story/" target="_blank" rel="noopener">The Neuron on Kimi K2.6</a> ·
+    <a href="https://keyholesoftware.com/agentic-ai-enterprise-trends-2026/" target="_blank" rel="noopener">Keyhole Software</a></p>
+    <p class="sig">Designed &amp; Architected by Krishnamurthy Kandregula · Made by Claude</p>
+  </footer>
+</section>
+
+</main>
+<nav class="tabs" aria-label="Screens"><div>
+  <button type="button" data-s="news" aria-current="page"><i></i>News</button>
+  <button type="button" data-s="learn"><i></i>Learn</button>
+  <button type="button" data-s="order"><i></i>Order</button>
+  <button type="button" data-s="cost"><i></i>Cost</button>
+  <button type="button" data-s="plan"><i></i>Plan</button>
+</div></nav>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+  function money(x){return x>=100?'$'+Math.round(x).toLocaleString('en-US'):'$'+x.toFixed(2)}
+  function mins(x){return x<1?Math.round(x*60)+' sec':x<120?(x<10?x.toFixed(1):Math.round(x))+' min':(x/60).toFixed(1)+' hours'}
+  function toks(x){return x>=1e6?(x/1e6).toFixed(1)+'M':x>=1e3?Math.round(x/1e3)+'k':String(Math.round(x))}
+  function pressed(group,idx){var b=group.querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].setAttribute('aria-pressed',i===idx?'true':'false')}
+
+  /* ---------- tabs ---------- */
+  var tabs=document.querySelectorAll('.tabs button'),names=['news','learn','order','cost','plan'];
+  function show(name){
+    if(names.indexOf(name)<0)name='news';
+    names.forEach(function(n){$('s-'+n).hidden=(n!==name)});
+    for(var i=0;i<tabs.length;i++){
+      if(tabs[i].getAttribute('data-s')===name)tabs[i].setAttribute('aria-current','page');else tabs[i].removeAttribute('aria-current');
+    }
+    window.scrollTo(0,0);
+    try{history.replaceState(null,'','#'+name)}catch(e){}
+  }
+  for(var ti=0;ti<tabs.length;ti++)tabs[ti].addEventListener('click',function(){show(this.getAttribute('data-s'))});
+  show((location.hash||'').replace('#',''));
+
+  /* ---------- NEWS: run steps ---------- */
+  var STEP=[
+    {c:['<span class="g on">plan</span>','<em>→</em>','<span>●</span><span>●</span><span>●</span><span>●</span>','<em>→</em>','<span class="c">◆</span><span class="c">◆</span><span class="c">◆</span><span class="c">◆</span>','<em>→</em>','<span class="g">merge</span>'],
+     t:'The lead agent reads the job and lists the pieces. In Claude Code it writes a short script, so the plan lives outside its own memory.'},
+    {c:['<span class="g">plan</span>','<em>→</em>','<span class="on">●</span><span class="on">●</span><span class="on">●</span><span class="on">●</span>','<em>→</em>','<span class="c">◆</span><span class="c">◆</span><span class="c">◆</span><span class="c">◆</span>','<em>→</em>','<span class="g">merge</span>'],
+     t:'Helper agents each take one piece. In Claude Code, 16 work at once by default and the rest wait their turn.'},
+    {c:['<span class="g">plan</span>','<em>→</em>','<span>●</span><span>●</span><span>●</span><span>●</span>','<em>→</em>','<span class="c on">◆</span><span class="c on">◆</span><span class="c on">◆</span><span class="c on">◆</span>','<em>→</em>','<span class="g">merge</span>'],
+     t:'Other agents try to prove each finding wrong. Only the claims that survive are kept.'},
+    {c:['<span class="g">plan</span>','<em>→</em>','<span>●</span><span>●</span><span>●</span><span>●</span>','<em>→</em>','<span class="c">◆</span><span class="c">◆</span><span class="c">◆</span><span class="c">◆</span>','<em>→</em>','<span class="g on">merge</span>'],
+     t:'Results combine into one answer. If you stop the run, finished agents keep their saved results, so it can resume.'}
+  ];
+  var sb=$('stepbtns');
+  function stepShow(i){$('stepchips').innerHTML=STEP[i].c.join('');$('steptxt').textContent=STEP[i].t;pressed(sb,i)}
+  var sbtn=sb.querySelectorAll('button');
+  for(var si=0;si<sbtn.length;si++)(function(i){sbtn[i].addEventListener('click',function(){stepShow(i)})})(si);
+  stepShow(0);
+
+  /* ---------- NEWS: fan-out simulator ---------- */
+  var fn=$('fn'),fgrid=$('fgrid'),fEls=[],ftimer=null,CONC=16;
+  function fstop(){if(ftimer){clearInterval(ftimer);ftimer=null}}
+  function fbuild(){
+    fstop();var t=+fn.value;$('fnv').textContent=t;fgrid.innerHTML='';fEls=[];
+    for(var i=0;i<t;i++){var d=document.createElement('i');fgrid.appendChild(d);fEls.push(d)}
+    $('fr-run').textContent='0';$('fr-done').textContent='0';$('fr-waves').textContent=Math.ceil(t/CONC);$('fr-tok').textContent='~'+t+'×';$('frun').textContent='Run';
+  }
+  function frun(){
+    fstop();var t=+fn.value,waves=Math.ceil(t/CONC),w=0;
+    for(var i=0;i<fEls.length;i++)fEls[i].className='';
+    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function finish(){for(var k=0;k<fEls.length;k++)fEls[k].className='done';$('fr-run').textContent='0';$('fr-done').textContent=t;$('frun').textContent='Run again'}
+    function step(){
+      var s=w*CONC,e=Math.min(s+CONC,t);
+      for(var a=Math.max(0,s-CONC);a<s;a++)fEls[a].className='done';
+      for(var b=s;b<e;b++)fEls[b].className='run';
+      $('fr-run').textContent=e-s;$('fr-done').textContent=s;w++;
+      if(w>waves){fstop();finish()}
+    }
+    if(reduce){finish();return}
+    step();ftimer=setInterval(step,Math.max(40,Math.min(500,5000/waves)));
+  }
+  fn.addEventListener('input',fbuild);$('frun').addEventListener('click',frun);$('freset').addEventListener('click',fbuild);fbuild();
+
+  /* ---------- LEARN: moving-house toy ---------- */
+  var BOX=24,HANDS=6,hs=$('h'),crew=$('crew'),boxes=$('boxes'),timer=null,bEls=[];
+  for(var b=0;b<BOX;b++){var bi=document.createElement('i');boxes.appendChild(bi);bEls.push(bi)}
+  function resetBoxes(){for(var i=0;i<bEls.length;i++)bEls[i].className=''}
+  function stopPlay(){if(timer){clearInterval(timer);timer=null}$('play').textContent='Watch them work'}
+  function toy(){
+    var h=+hs.value,eff=Math.min(h,HANDS),time=Math.ceil(BOX/eff),cost=BOX+h;
+    $('hv').textContent=h;
+    var c='';for(var i=0;i<h;i++)c+='<i class="'+(i<HANDS?'on':'')+'"></i>';crew.innerHTML=c;
+    $('tv').textContent=time+(time===1?' hour':' hours');$('cv').textContent=cost+' units';
+    $('tf').style.width=(time/BOX*100)+'%';$('cf').style.width=(cost/(BOX*2)*100)+'%';
+    var m=$('tmsg'),cls,t;
+    if(h<HANDS){cls='good';t='Each new helper still saves time.'}
+    else if(h===HANDS){cls='good';t='The door is full. This is the sweet spot.'}
+    else{cls='bad';t=(h-HANDS)+' helper'+(h-HANDS>1?'s are':' is')+' waiting outside. Same time, higher cost.'}
+    m.className='msg '+cls;m.textContent=t;stopPlay();resetBoxes();$('clock').textContent='';
+  }
+  $('play').addEventListener('click',function(){
+    if(timer){stopPlay();return}
+    resetBoxes();
+    var eff=Math.min(+hs.value,HANDS),packed=0,hour=0;
+    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    $('play').textContent='Stop';
+    function tick(){
+      hour++;packed=Math.min(BOX,packed+eff);
+      for(var i=0;i<packed;i++)bEls[i].className='done';
+      $('clock').textContent='Hour '+hour+': '+packed+' of '+BOX+' boxes packed.';
+      if(packed>=BOX){stopPlay();$('clock').textContent='Done in '+hour+(hour===1?' hour.':' hours.')}
+    }
+    if(reduce){while(packed<BOX)tick();return}
+    tick();timer=setInterval(tick,550);
+  });
+  hs.addEventListener('input',toy);toy();
+
+  /* ---------- LEARN: speed model ---------- */
+  var sn=$('sn'),sp=$('sp'),sc=$('sc'),ss=$('ss');
+  function spd(N,pf,C,oh){var eff=Math.min(N,C);return 1/((1-pf)+pf/eff+oh*N*.1)}
+  function sdraw(){
+    var N=+sn.value,pf=+sp.value/100,C=+sc.value,sf=+ss.value/100;
+    $('snv').textContent=N;$('spv').textContent=sp.value+'%';$('scv').textContent=C;$('ssv').textContent=ss.value+'%';
+    var W=600,H=300,L=70,R=16,T=16,B=60,maxY=1,best=1,bestS=0,pts=[],i,k;
+    for(i=0;i<=80;i++){var x=Math.max(1,Math.round(Math.pow(1000,i/80))),y=spd(x,pf,C,sf);pts.push([x,y]);if(y>maxY)maxY=y}
+    for(k=1;k<=1000;k++){var q=spd(k,pf,C,sf);if(q>bestS+1e-9){bestS=q;best=k}}
+    maxY=Math.max(2,Math.ceil(maxY*1.1));
+    var X=function(v){return L+(Math.log(v)/Math.log(1000))*(W-L-R)},Y=function(v){return T+(1-v/maxY)*(H-T-B)};
+    var g='',t;
+    for(t=0;t<=4;t++){var yv=maxY*t/4,yy=Y(yv);g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+yy+'" y2="'+yy+'" stroke="#26262b" stroke-width="2"/><text x="'+(L-8)+'" y="'+(yy+7)+'" text-anchor="end">'+(yv>=100?Math.round(yv):yv.toFixed(yv%1?1:0))+'×</text>'}
+    [1,10,100,1000].forEach(function(v){g+='<text x="'+X(v)+'" y="'+(H-26)+'" text-anchor="middle">'+v+'</text>'});
+    g+='<text x="'+(W-R)+'" y="'+(H-2)+'" text-anchor="end">agents (log scale)</text>';
+    g+='<path d="'+pts.map(function(q2,j){return (j?'L':'M')+X(q2[0]).toFixed(1)+' '+Y(q2[1]).toFixed(1)}).join('')+'" fill="none" stroke="#d8b878" stroke-width="4"/>';
+    var cx=X(N),cy=Y(spd(N,pf,C,sf));
+    g+='<line x1="'+cx+'" x2="'+cx+'" y1="'+T+'" y2="'+(H-B)+'" stroke="#6e5d3b" stroke-width="2" stroke-dasharray="4 5"/><circle cx="'+cx+'" cy="'+cy+'" r="8" fill="#d8b878" stroke="#0b0b0d" stroke-width="3"/>';
+    g+='<circle cx="'+X(best)+'" cy="'+Y(bestS)+'" r="7" fill="none" stroke="#7fb88a" stroke-width="3"/>';
+    $('schart').innerHTML=g;
+    var spv=spd(N,pf,C,sf),co=1+sf*N;
+    $('sr-speed').textContent=(spv>=100?Math.round(spv):spv.toFixed(1))+'×';
+    $('sr-cost').textContent=(co>=100?Math.round(co):co.toFixed(1))+'×';
+    $('sr-eff').textContent=(spv/co).toFixed(2);$('sr-best').textContent=best;
+    var v=$('sverdict'),cls,msg;
+    if(pf<.3){cls='bad';msg='Mostly sequential work. Extra agents wait on each other, so cost rises while speed barely moves.'}
+    else if(N>C*2&&spv<=spd(Math.min(N,C),pf,C,sf)*1.05){cls='mid';msg='Beyond '+C+' working at once, more agents add cost and no speed. Use them only for wider coverage or cross-checking.'}
+    else if(spv/co<.2){cls='mid';msg='Faster, but you pay a lot for each extra bit of speed. Try fewer agents.'}
+    else{cls='good';msg='A reasonable setup for this kind of work. Speed improves and cost stays proportionate.'}
+    v.className='msg '+cls;v.textContent=msg;
+  }
+  [sn,sp,sc,ss].forEach(function(el){el.addEventListener('input',function(){pressed($('spre'),-1);sdraw()})});
+  var spb=$('spre').querySelectorAll('button');
+  for(var pi=0;pi<spb.length;pi++)(function(i){spb[i].addEventListener('click',function(){
+    sp.value=this.getAttribute('data-p');sn.value=this.getAttribute('data-n');sdraw();pressed($('spre'),i)})})(pi);
+  sdraw();
+
+  /* ---------- LEARN: prerequisites ---------- */
+  var boxesN=document.querySelectorAll('#needset input[type=checkbox]');
+  function need(){
+    var n=0,i;for(i=0;i<boxesN.length;i++)if(boxesN[i].checked)n++;
+    var v=$('needv'),cls,msg;
+    if(!boxesN[0].checked){cls='bad';msg='Stay with one agent. Nothing here can run in parallel. ('+n+' of 6 ticked)'}
+    else if(n>=5){cls='good';msg='Good fit for a team. Run a small trial first. ('+n+' of 6 ticked)'}
+    else{cls='mid';msg='Possible, but work through the unticked items first. ('+n+' of 6 ticked)'}
+    v.className='msg '+cls;v.textContent=msg;
+  }
+  for(var ni=0;ni<boxesN.length;ni++)boxesN[ni].addEventListener('change',need);need();
+
+  /* ---------- LEARN: task rosters ---------- */
+  var TASKS=[
+    {name:'Bug sweep',flow:'plan → one worker per file → one checker per finding → merge',
+     roster:[['Planner lists files and modules','1'],['Workers, one per file or module','10 to 500'],['Checkers, one per finding','0 to 1 per worker'],['Merger ranks and removes duplicates','1']],
+     note:'Parallel and independent. Checking matters because false alarms waste reviewer time.'},
+    {name:'Migration',flow:'discover → migrate each file in its own copy → check each → fix until it passes → summary',
+     roster:[['Discovery agent lists the files','1'],['Migrators, one per file, in isolated copies','10 to 500'],['Checkers run the tests per file','1 per file'],['Fix rounds until the check passes','rounds unknown']],
+     note:'Isolated copies stop edits from colliding. Put a stop rule on the fix loop.'},
+    {name:'Research',flow:'plan angles → readers in parallel → skeptics refute → synthesize',
+     roster:[['Planner splits the question into angles','1'],['Readers, one per source or angle','2 to 4 to compare, 10+ if complex'],['Skeptics test each claim','1 per key claim'],['Synthesizer writes the cited answer','1']],
+     note:'Follows Anthropic\'s scaling rule. Claims that fail cross-checking are dropped or marked unverified.'},
+    {name:'Doc review',flow:'one reviewer per document in parallel → compare across documents → merge',
+     roster:[['Reviewers, one per document','1 per document'],['Cross-document comparer, after the reviewers','1'],['Merger produces one ranked list','1']],
+     note:'The comparison needs every review, so it runs after them, not beside them.'},
+    {name:'Several plans',flow:'drafters in parallel → judge compares → final plan',
+     roster:[['Drafters, each with a different angle','3 to 5'],['Judge weighs the drafts','1'],['Writer produces the final plan','1']],
+     note:'Few agents and high value per token. Good when the decision is costly to reverse.'},
+    {name:'Small fix',flow:'one agent, in order',
+     roster:[['Single agent','1']],
+     note:'Each step needs the last result, so extra agents would only wait. A team costs more and adds nothing.'}
+  ];
+  var tb=$('taskbtns'),to=$('taskout');
+  function showTask(i){
+    var t=TASKS[i],h='<div class="k">Pattern</div><div class="flow">'+t.flow+'</div><ul class="roster">';
+    for(var j=0;j<t.roster.length;j++)h+='<li><span>'+t.roster[j][0]+'</span><span>'+t.roster[j][1]+'</span></li>';
+    h+='</ul><p class="small" style="margin:8px 0 0">'+t.note+'</p>';to.innerHTML=h;pressed(tb,i);
+  }
+  TASKS.forEach(function(t,i){
+    var bt=document.createElement('button');bt.type='button';bt.textContent=t.name;bt.setAttribute('aria-pressed','false');
+    bt.addEventListener('click',function(){showTask(i)});tb.appendChild(bt);
+  });
+  showTask(0);
+
+  /* ---------- ORDER: game ---------- */
+  var Q=[
+    {t:'Check 100 separate files for bugs.',a:'par',w:'Each file stands alone, so all 100 can be checked at the same time.'},
+    {t:'Write the code, then test it.',a:'seq',w:'The test needs the finished code. It has to wait.'},
+    {t:'Read 8 different websites for a report.',a:'par',w:'No website needs another one to be read first.'},
+    {t:'Two helpers edit the same file.',a:'seq',w:'They would overwrite each other. Run them in line, or give each their own copy.'},
+    {t:'Write one summary from the 8 reports.',a:'seq',w:'The summary needs all 8 reports first, so it comes after them.'},
+    {t:'Fix errors, run the check, repeat until it passes.',a:'seq',w:'Each round depends on the last. Add a stop rule so it cannot loop forever.'}
+  ];
+  var qi=0,score=0,res=[],answered=false;
+  function gdots(){var h='';for(var i=0;i<Q.length;i++)h+='<i class="'+(res[i]===1?'ok':res[i]===0?'bad':(i===qi?'now':''))+'"></i>';$('gdots').innerHTML=h}
+  function ask(){
+    answered=false;
+    if(qi>=Q.length){
+      $('gcount').textContent='Finished';
+      var msg=score===Q.length?'Perfect. You can tell what depends on what.':score>=4?'Good. Check the ones you missed.':'Worth another try. Ask: does this step need the last result?';
+      $('gq').textContent='You got '+score+' of '+Q.length+'. '+msg;
+      $('gbtns').hidden=true;$('gfb').hidden=true;$('gnext').hidden=false;$('gnext').textContent='Play again';gdots();return;
+    }
+    $('gcount').textContent='Question '+(qi+1)+' of '+Q.length;$('gq').textContent=Q[qi].t;
+    $('gbtns').hidden=false;$('gfb').hidden=true;$('gnext').hidden=true;$('gnext').textContent='Next';gdots();
+  }
+  function answer(a){
+    if(answered)return;answered=true;
+    var right=(a===Q[qi].a);if(right)score++;res[qi]=right?1:0;
+    var f=$('gfb');f.hidden=false;f.className='msg '+(right?'good':'bad');f.textContent=(right?'Right. ':'Not quite. ')+Q[qi].w;
+    $('gnext').hidden=false;gdots();
+  }
+  $('b-seq').addEventListener('click',function(){answer('seq')});
+  $('b-par').addEventListener('click',function(){answer('par')});
+  $('gnext').addEventListener('click',function(){if(qi>=Q.length){qi=0;score=0;res=[]}else qi++;ask()});
+  ask();
+
+  /* ---------- COST: calculator ---------- */
+  var P={haiku:{i:.10,o:.50,c:.01},sonnet:{i:2,o:10,c:.10},opus:{i:4,o:20,c:.20},fable:{i:10,o:50,c:.25}};
+  var S=3000,SUM=300,VOUT=400,CTX=1000000;
+  function price(m,batch,hi){var p=P[m],i=p.i,o=p.o,c=p.c;if(m==='haiku'&&hi){i=.5;o=2.5;c=.05}if(batch){i*=.5;o*=.5;c*=.5}return {i:i,o:o,c:c}}
+  function usd(p,t,cache){return (t.n*p.i+t.r*(cache?p.c:p.i)+t.o*p.o)/1e6}
+  function add(a,b){return {n:a.n+b.n,r:a.r+b.r,o:a.o+b.o}}
+  function tot(t){return t.n+t.r+t.o}
+  var NAMES=['One agent alone','One fresh agent at a time','Team of workers','Team + checkers','Team + checkers, cheaper helpers'];
+  var HELP=['One long chat. It re-reads everything every time.','Same small jobs as a team, but one after another.','Many workers at once, each with a small job.','Workers, then a second agent checks each result.','A cheap model does the main work, a stronger one checks it.'];
+  function calc(){
+    var N=+$('n').value,I=+$('ti').value,O=+$('to').value,T=+$('ts').value,C=+$('ca').value,V=+$('v').value,DL=+$('dl').value;
+    var main=$('m').value,cache=$('cache').checked,batch=$('batch').checked,needChk=$('chk').checked,cheapOK=$('cheap').checked;
+    $('nv').textContent=N;$('tiv').textContent=toks(I);$('tov').textContent=toks(O);$('tsv').textContent=T+' s';$('cav').textContent=C;$('vv').textContent=V;
+    var pm=price(main,batch,false),ph=price('haiku',batch,S+I>100000);
+    var plan={n:S+N*30,r:0,o:N*30},synth={n:S+N*SUM,r:0,o:3000};
+    var work={n:N*I+S,r:(N-1)*S,o:N*O},ver={n:N*V*(I+O),r:N*V*S,o:N*V*VOUT};
+    var single={n:N*I+S,r:(N-1)*S+(I+O)*N*(N-1)/2,o:N*O};
+    var wave=Math.ceil(N/C),vwave=Math.ceil(N*V/C);
+    var t1=N*T/60,t2=(30+N*T+60)/60,t3=(30+wave*T+60)/60,t4=t3+(V>0?vwave*T*.5/60:0);
+    var cMain=usd(pm,plan,cache)+usd(pm,synth,cache);
+    var base=add(plan,synth),pw=add(base,work),pv=add(pw,ver);
+    var w=[
+      {t:single,cost:usd(pm,single,cache),time:t1,agents:1,chk:false,ctx:S+N*(I+O)<=CTX},
+      {t:pw,cost:cMain+usd(pm,work,cache),time:t2,agents:N+2,chk:false,ctx:true},
+      {t:pw,cost:cMain+usd(pm,work,cache),time:t3,agents:N+2,chk:false,ctx:true},
+      {t:pv,cost:cMain+usd(pm,work,cache)+usd(pm,ver,cache),time:t4,agents:N+2+N*V,chk:V>0,ctx:true},
+      {t:pv,cost:cMain+usd(ph,work,cache)+usd(pm,ver,cache),time:t4,agents:N+2+N*V,chk:V>0,ctx:true,cheap:true}
+    ];
+    var best=-1,bc=Infinity,mx=0;
+    w.forEach(function(x,i){
+      x.over=x.agents>1000;x.late=!batch&&x.time>DL;x.large=x.agents>25||tot(x.t)>1.5e6;
+      x.ok=x.ctx&&!x.over&&!x.late&&(!needChk||x.chk)&&(!x.cheap||cheapOK);
+      if(x.ctx&&x.cost>mx)mx=x.cost;
+      if(x.ok&&(x.cost<bc-1e-9||(Math.abs(x.cost-bc)<=1e-9&&best>=0&&x.time<w[best].time))){bc=x.cost;best=i}
+    });
+    var h='';
+    w.forEach(function(x,i){
+      h+='<div class="opt'+(i===best?' best':'')+'"><div class="top"><span class="nm">'+NAMES[i]+'</span>'+(i===best?'<span class="tag best">BEST PLAN</span>':'')+'</div><div class="small" style="margin-top:2px">'+HELP[i]+'</div>';
+      if(!x.ctx){h+='<div class="tags"><span class="tag no">Too big for one agent to hold</span></div>'}
+      else{
+        h+='<div class="nums"><div><small>Cost</small><strong>'+money(x.cost)+'</strong></div><div><small>Time</small><strong>'+mins(x.time)+'</strong></div><div><small>Agents</small><strong>'+x.agents.toLocaleString('en-US')+'</strong></div></div>';
+        h+='<div class="track"><div class="fill'+(i===best?'':' cost')+'" style="width:'+Math.max(2,x.cost/(mx||1)*100).toFixed(1)+'%"></div></div><div class="tags">';
+        if(x.over)h+='<span class="tag no">Over the 1,000-agent limit</span>';
+        if(x.late&&!x.over)h+='<span class="tag no">Too slow for your deadline</span>';
+        if(x.chk)h+='<span class="tag ok">Results checked</span>';
+        if((i===3||i===4)&&V===0)h+='<span class="tag">No checkers set</span>';
+        if(x.cheap)h+='<span class="tag">'+(cheapOK?'Test the cheap model on a few items first':'Tick the cheaper-model box to allow')+'</span>';
+        if(needChk&&!x.chk)h+='<span class="tag no">No checking</span>';
+        if(x.large)h+='<span class="tag">Big-run warning</span>';
+        h+='</div>';
+      }
+      h+='</div>';
+    });
+    $('opts').innerHTML=h;
+    var bm=$('best');
+    if(best>=0){bm.className='msg good';bm.textContent='Best plan: '+NAMES[best]+'. About '+money(w[best].cost)+' and '+mins(w[best].time)+(batch?' (batch results arrive later)':'')+'.'}
+    else{bm.className='msg bad';bm.textContent='No plan fits. Try a later deadline, more agents at once, fewer items, or turn off a requirement.'}
+  }
+  ['n','dl','chk','cheap','ti','to','ts','ca','v','m','cache','batch'].forEach(function(id){var e=$(id);e.addEventListener('input',calc);e.addEventListener('change',calc)});
+  calc();
+
+  /* ---------- COST: seats ---------- */
+  var seats=$('seats'),sEls=[];
+  for(var s=0;s<1000;s++){var si=document.createElement('i');seats.appendChild(si);sEls.push(si)}
+  function setSeats(n){
+    for(var i=0;i<sEls.length;i++)sEls[i].className=i<n?'w':'';
+    $('segnote').textContent=n+' working now. '+(1000-n)+' wait in line, so a 1,000-agent run goes in about '+Math.ceil(1000/n)+' rounds.';
+    var bs=document.querySelectorAll('#segs button');
+    for(var j=0;j<bs.length;j++)bs[j].setAttribute('aria-pressed',(+bs[j].getAttribute('data-n')===n)?'true':'false');
+  }
+  var segb=document.querySelectorAll('#segs button');
+  for(var q=0;q<segb.length;q++)segb[q].addEventListener('click',function(){setSeats(+this.getAttribute('data-n'))});
+  setSeats(16);
+
+  /* ---------- PLAN: checklist ---------- */
+  var STEPS=[
+    {t:'Decide if a team is worth it',d:'Say yes to all three: the job has many separate pieces, a mistake would be costly, and you can afford the extra cost. Otherwise use one agent.',w:'Anthropic measured multi-agent systems at about 15 times the tokens of a chat. They pay off only when the task is valuable enough.'},
+    {t:'Split the job into pieces',d:'Pick a natural unit: one file, one page, one source, one claim. Each piece must not need another piece.',w:'Independent pieces are what allow workers to run at the same time.'},
+    {t:'Choose the order',d:'Steps that need each other go in line. The rest go together. Add a checker where a wrong answer is expensive.',w:'Practise on the Order screen. When two helpers touch the same file, give each its own copy.'},
+    {t:'Try a small piece first',d:'Run about 10% of the job. Write down the cost and time per piece.',w:'The Claude Code docs advise one directory or one narrow question before a whole repository.'},
+    {t:'Scale up with a limit',d:'Multiply carefully. Choose a small or medium team size, and stop the run if the cost per piece jumps.',w:'The size setting is advice to Claude, not a hard cap. The hard cap is 1,000 agents per run.'}
+  ];
+  var done=[];try{done=JSON.parse(store('ams.steps')||'[]')}catch(e){done=[]}
+  function renderSteps(){
+    var h='',n=0;
+    STEPS.forEach(function(s,i){
+      var d=!!done[i];if(d)n++;
+      h+='<div class="step'+(d?' done':'')+'"><label class="hd"><input type="checkbox" data-i="'+i+'"'+(d?' checked':'')+'><span><span class="t">'+(i+1)+'. '+s.t+'</span><p class="do">'+s.d+'</p></span></label><details><summary>Why this step</summary><p>'+s.w+'</p></details></div>';
+    });
+    $('steps').innerHTML=h;$('pf').style.width=(n/STEPS.length*100)+'%';
+    $('ptxt').textContent=n===STEPS.length?'All five done. You are ready to run it.':n+' of '+STEPS.length+' done';
+    var cbs=$('steps').querySelectorAll('input[type=checkbox]');
+    for(var k=0;k<cbs.length;k++)cbs[k].addEventListener('change',function(){done[+this.getAttribute('data-i')]=this.checked;store('ams.steps',JSON.stringify(done));renderSteps()});
+  }
+  $('reset').addEventListener('click',function(){done=[];store('ams.steps',JSON.stringify(done));renderSteps()});
+  renderSteps();
+
+  /* ---------- app setup: icon, manifest, install, offline ---------- */
+  function icon(size){
+    var c=document.createElement('canvas');c.width=c.height=size;var x=c.getContext('2d'),m=size/512;
+    x.fillStyle='#0b0b0d';x.fillRect(0,0,size,size);x.strokeStyle='#6e5d3b';x.lineWidth=6*m;
+    var cx=size/2,cy=size/2,r=150*m,i,a,px,py;
+    for(i=0;i<6;i++){a=i*Math.PI/3-Math.PI/2;px=cx+Math.cos(a)*r;py=cy+Math.sin(a)*r;x.beginPath();x.moveTo(cx,cy);x.lineTo(px,py);x.stroke()}
+    x.fillStyle='#d8b878';x.beginPath();x.arc(cx,cy,48*m,0,7);x.fill();
+    for(i=0;i<6;i++){a=i*Math.PI/3-Math.PI/2;px=cx+Math.cos(a)*r;py=cy+Math.sin(a)*r;x.beginPath();x.arc(px,py,26*m,0,7);x.fill()}
+    return c.toDataURL('image/png');
+  }
+  try{
+    var i192=icon(192),i512=icon(512);
+    var mf={name:'Many Agents Made Simple',short_name:'Agents Simple',start_url:'./',scope:'./',display:'standalone',background_color:'#0b0b0d',theme_color:'#0b0b0d',icons:[{src:i192,sizes:'192x192',type:'image/png'},{src:i512,sizes:'512x512',type:'image/png',purpose:'any'}]};
+    var ml=document.createElement('link');ml.rel='manifest';ml.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));document.head.appendChild(ml);
+    var al=document.createElement('link');al.rel='apple-touch-icon';al.href=i192;document.head.appendChild(al);
+    var fl=document.createElement('link');fl.rel='icon';fl.href=i192;document.head.appendChild(fl);
+  }catch(e){}
+  var deferred=null;
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferred=e;$('install').hidden=false});
+  $('install').addEventListener('click',function(){
+    if(!deferred)return;deferred.prompt();
+    if(deferred.userChoice&&deferred.userChoice.then)deferred.userChoice.then(function(){deferred=null;$('install').hidden=true});
+  });
+  try{if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){navigator.serviceWorker.register('sw.js').catch(function(){})}}catch(e){}
+})();
+</script>
+</body></html>
